@@ -21,14 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. Inject the API Key from Secret
+      # 1. Inject the API Key from Secret (FIXED: using '#' as sed delimiter)
       - name: Inject API Key from Secret
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
-          # Use sed to replace the placeholder string with the secret API key value
-          # Assuming you updated the placeholder to something like %%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%
-          sed -i "s|%%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%|${GEMINI_API_KEY}|g" index.html
+          # The delimiter for the 's' command has been changed from '|' to '#'
+          # to safely handle any characters (like '/', '|', or '&') that might be in the API key.
+          sed -i "s#%%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%#${GEMINI_API_KEY}#g" index.html
           
       # 2. Setup Pages
       - name: Setup Pages
