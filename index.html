@@ -1,10 +1,454 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-    <title>My Simple GitHub Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Workout Planner (Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!--
+      Application Structure Plan:
+      1.  Workout Generation: Uses Gemini with a JSON schema for structured exercise output.
+      2.  Form Tips: Uses Gemini with Google Search grounding for real-time form advice.
+      3.  Constraint: Prompts include: weight bench, long barbell, EZ curl bar, adjustable dumbbells/plates, LEG EXTENSION/CURL ATTACHMENT, AND THE DESIRED WORKOUT DURATION.
+      4.  THEME CHANGE: Switched to Dark Mode (bg-gray-900).
+      5.  FORM TIP FIX: Updated AI prompt for extremely short Do's/Don'ts lists and added an 'Extra Note' instruction.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.8); /* Darker overlay */
+            backdrop-filter: blur(3px);
+        }
+        /* Custom checkbox style */
+        .muscle-label {
+            transition: all 0.2s ease-in-out;
+        }
+
+            .muscle-label input:checked + div {
+                background-color: #3b82f6; /* blue-600 */
+                color: white;
+                border-color: #3b82f6;
+            }
+
+            .muscle-label input:focus + div {
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+            }
+        /* Style for the generated Markdown lists within the modal */
+        #tip-text h2 {
+            font-weight: 700;
+            font-size: 1.25rem; /* text-xl */
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #f3f4f6; /* light text color for dark mode */
+        }
+
+        #tip-text ul {
+            list-style: disc;
+            padding-left: 1.5rem;
+        }
+
+        #tip-text li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
 </head>
-<body>
-    <h1>Hello, GitHub Pages!</h1>
-    <p>This is my first hosted website.</p>
+<body class="bg-gray-900 text-gray-100">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-50">Dynamic Workout Planner</h1>
+            <p class="text-gray-400 mt-2">Generate a custom workout based on your time and muscles.</p>
+        </header>
+
+        <!-- New Workout Generator Card -->
+        <div class="bg-gray-800 p-6 rounded-xl shadow-xl mb-8">
+            <h2 class="text-xl font-semibold mb-3 text-gray-50">Create Your Workout</h2>
+
+            <!-- Duration Selector -->
+            <h3 class="text-lg font-semibold mb-2 text-gray-50">1. Select Duration</h3>
+            <div class="mb-6">
+                <select id="workout-duration" class="w-full p-3 border border-gray-600 bg-gray-700 text-gray-100 rounded-lg focus:ring-blue-500 focus:border-blue-500 shadow-sm">
+                    <option value="45">45 Minutes (Recommended)</option>
+                    <option value="30">30 Minutes (Quick)</option>
+                    <option value="60">60 Minutes (Standard)</option>
+                    <option value="75">75 Minutes (Extended)</option>
+                </select>
+            </div>
+
+            <!-- Existing: Muscle Group Selector -->
+            <h3 class="text-lg font-semibold mb-2 text-gray-50">2. Choose Muscle Groups</h3>
+            <div id="muscle-group-selector" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-6">
+                <!-- Muscle group checkboxes will be injected here by JS -->
+            </div>
+
+            <button id="generate-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2 1M4 7l2-1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1m2 1l-2 1m2-1V16a2.5 2.5 0 015 0v2.5m0 0l2 1m-2-1l2-1m-2 1v2.5m-5-10.5l2-1m-2 1l2 1m-2-1V6a2.5 2.5 0 015 0v2.5m0 0l-2-1m2 1l-2 1m2-1V11" />
+                </svg>
+                Generate My Workout
+            </button>
+        </div>
+
+        <!-- Main content area for generated workout -->
+        <main id="workout-content">
+            <section id="generated-workout-content">
+                <div id="workout-placeholder" class="text-center text-gray-400 bg-gray-800 p-10 rounded-xl shadow-md">
+                    <p class="text-lg">Your generated workout will appear here.</p>
+                    <p class="text-sm">Select duration and muscle groups above and click "Generate".</p>
+                </div>
+
+                <div id="workout-loader" class="hidden text-center text-blue-400 bg-gray-800 p-10 rounded-xl shadow-md">
+                    <div class="flex justify-center items-center">
+                        <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                        <p class="text-lg font-semibold">Generating your custom plan...</p>
+                    </div>
+                </div>
+
+                <div id="workout-list" class="space-y-4">
+                    <!-- Generated exercise cards will be injected here by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Form Tip Modal -->
+    <div id="form-tip-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay transition-opacity duration-300">
+        <div class="bg-gray-800 p-6 md:p-8 rounded-xl shadow-2xl max-w-lg w-11/12 transform transition-all duration-300 scale-100">
+            <!-- Header with Close Button -->
+            <div class="flex justify-between items-start mb-4">
+                <h2 id="modal-title" class="text-2xl font-bold text-gray-50">Form Tip</h2>
+                <button onclick="document.getElementById('form-tip-modal').classList.add('hidden')" class="text-gray-400 hover:text-gray-200 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+
+            <!-- Content Area (Scrollable) -->
+            <div class="text-gray-200 space-y-4 max-h-96 overflow-y-auto pr-2" id="modal-content">
+                <!-- Changed to div to properly render the Markdown lists -->
+                <div id="tip-text" class="whitespace-pre-wrap"></div>
+                <div id="tip-loading" class="hidden flex items-center justify-center space-x-2">
+                    <div class="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="text-blue-400">Generating expert advice...</p>
+                </div>
+                <div id="tip-sources" class="text-xs text-gray-400 border-t pt-2 mt-4 border-gray-700 hidden">
+                    <p class="font-semibold">Sources (Grounded Search):</p>
+                    <ul id="source-list" class="list-disc list-inside ml-4 mt-1"></ul>
+                </div>
+            </div>
+            <!-- Main Close Button -->
+            <button onclick="document.getElementById('form-tip-modal').classList.add('hidden')" class="mt-6 w-full bg-red-600 text-white font-semibold py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">Close</button>
+        </div>
+    </div>
+
+    <script>
+        /// The API key will be injected here during the GitHub Actions deployment.
+        const API_KEY = "%%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%";
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+        const MAX_RETRIES = 5;
+
+        // List of muscle groups for the checkboxes
+        const muscleGroups = [
+            'Chest', 'Back', 'Quads', 'Hamstrings', 'Glutes', 'Shoulders',
+            'Biceps', 'Triceps', 'Core'
+        ];
+
+        // This function creates the HTML for each exercise card
+        function createExerciseCard(exercise) {
+            // Check for valid URL, default to a search if not a full URL
+            let videoUrl = exercise.video;
+            if (!videoUrl.startsWith('http')) {
+                videoUrl = `https://www.youtube.com/search?q=how+to+do+${encodeURIComponent(exercise.name)}`;
+            }
+
+            return `
+                <div class="bg-gray-800 p-5 rounded-xl shadow-md border border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex-grow">
+                        <h3 class="text-lg font-bold text-blue-400">${exercise.name}</h3>
+                        <div class="flex flex-wrap items-center text-sm text-gray-300 mt-2 gap-2">
+                            <span class="bg-gray-700 px-2 py-1 rounded-full">🎯 ${exercise.focus}</span>
+                            <span class="bg-gray-700 px-2 py-1 rounded-full">🏋️ ${exercise.setsReps}</span>
+                        </div>
+                    </div>
+                    <div class="flex-shrink-0 mt-4 md:mt-0 flex flex-col space-y-2">
+                        <button data-exercise-name="${exercise.name}" class="ai-form-btn inline-block bg-green-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-300">
+                            ✨ Get Form Tip
+                        </button>
+                        <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 text-white font-semibold py-2 px-5 text-center rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
+                            Watch Video
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // This function attaches click listeners to the "Get Form Tip" buttons
+        function attachCardListeners() {
+            const formTipButtons = document.querySelectorAll('.ai-form-btn');
+            formTipButtons.forEach(button => {
+                // Remove old listener to prevent duplicates if we re-generate
+                button.replaceWith(button.cloneNode(true));
+            });
+
+            // Add new listeners
+            document.querySelectorAll('.ai-form-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const exerciseName = button.dataset.exerciseName;
+                    getFormTip(exerciseName);
+                });
+            });
+        }
+
+        // Utility for API calls with backoff
+        async function exponentialBackoffFetch(url, options, attempt = 1) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok && response.status === 429 && attempt < MAX_RETRIES) {
+                    const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return exponentialBackoffFetch(url, options, attempt + 1);
+                }
+                return response;
+            } catch (error) {
+                if (attempt < MAX_RETRIES) {
+                    const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return exponentialBackoffFetch(url, options, attempt + 1);
+                }
+                throw error;
+            }
+        }
+
+        // The main function to generate the workout plan via Gemini API
+        async function generateWorkout() {
+            const selectedGroups = [];
+            document.querySelectorAll('#muscle-group-selector input:checked').forEach(input => {
+                selectedGroups.push(input.value);
+            });
+
+            // Get selected duration
+            const durationInput = document.getElementById('workout-duration');
+            const selectedDuration = durationInput ? durationInput.value : '45';
+
+            const placeholder = document.getElementById('workout-placeholder');
+            const loader = document.getElementById('workout-loader');
+            const list = document.getElementById('workout-list');
+
+            if (API_KEY === "") {
+                placeholder.innerHTML = `<p class="text-lg text-red-400 font-semibold">API Key Missing!</p><p class="text-md text-gray-400 mt-2">Please paste your API key into the 'const API_KEY' variable in the script to enable dynamic generation.</p>`;
+                placeholder.classList.remove('hidden');
+                loader.classList.add('hidden');
+                list.innerHTML = "";
+                return;
+            }
+
+            if (selectedGroups.length === 0) {
+                placeholder.innerHTML = `<p class="text-lg text-red-400">Please select at least one muscle group.</p>`;
+                placeholder.classList.remove('hidden');
+                loader.classList.add('hidden');
+                list.innerHTML = "";
+                return;
+            }
+
+            // Show loader, hide placeholder, clear old list
+            loader.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+            list.innerHTML = "";
+
+            // --- SYSTEM INSTRUCTION FOR EQUIPMENT AND DURATION CONSTRAINT ---
+            const systemInstruction = `You are an expert fitness planner. The user is a teen athlete and only has access to a weight bench, a long barbell, an EZ curl bar, adjustable dumbbells/plates, and a LEG EXTENSION/CURL ATTACHMENT. Generate a balanced workout routine with 4-5 exercises *only* using this equipment, based on the user's selected muscle groups. The workout must be designed to fit a total duration of ${selectedDuration} minutes, suggesting appropriate set/rep schemes and minimal rest times to achieve this. For each exercise, provide the name, primary muscle focus, a typical set/rep range, and a YouTube search URL. For the 'video' field, provide a complete, URL-encoded YouTube search URL (starting with https://www.youtube.com/watch?v= or https://www.youtube.com/results?search_query=) that leads directly to a video showing the exercise. All advice must be safe and age-appropriate.`;
+
+            const userQuery = `Generate a workout for the following muscle groups: ${selectedGroups.join(', ')}.`;
+
+            // Define the JSON schema for the structured response
+            const schema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        name: { type: "STRING" },
+                        focus: { type: "STRING" },
+                        setsReps: { type: "STRING" },
+                        video: { type: "STRING" }
+                    },
+                    required: ["name", "focus", "setsReps", "video"]
+                }
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                }
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const response = await exponentialBackoffFetch(`${API_URL}?key=${API_KEY}`, options);
+
+                if (!response.ok) {
+                    let errorMsg = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorResult = await response.json();
+                        errorMsg = errorResult.error?.message || errorMsg;
+                    } catch (e) {
+                        // Response wasn't JSON
+                    }
+                    throw new Error(`API Error: ${errorMsg}`);
+                }
+
+                const result = await response.json();
+
+                loader.classList.add('hidden');
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const jsonText = candidate.content.parts[0].text;
+                    const exercises = JSON.parse(jsonText);
+
+                    if (exercises.length === 0) {
+                         placeholder.innerHTML = `<p class="text-lg text-gray-400">No exercises found for this combination. Try selecting different muscle groups or generating again.</p>`;
+                         placeholder.classList.remove('hidden');
+                         return;
+                    }
+
+                    // Populate the list
+                    exercises.forEach(exercise => {
+                        list.innerHTML += createExerciseCard(exercise);
+                    });
+
+                    // IMPORTANT: Attach listeners to the new buttons
+                    attachCardListeners();
+
+                } else {
+                    placeholder.innerHTML = `<p class="text-lg text-red-400">Sorry, I couldn't generate a workout right now. Please try again.</p>`;
+                    placeholder.classList.remove('hidden');
+                }
+
+            } catch (error) {
+                loader.classList.add('hidden');
+                placeholder.innerHTML = `<p class="text-lg text-red-400 font-semibold">An error occurred:</p><p class="text-md text-gray-400 mt-2">${error.message}</p><p class="text-sm text-gray-500 mt-4">Please ensure your API key is correct and valid.</p>`;
+                placeholder.classList.remove('hidden');
+                console.error("Workout Generation Error:", error);
+            }
+        }
+
+        // This function gets the form tip using search grounding
+        async function getFormTip(exerciseName) {
+            const modal = document.getElementById('form-tip-modal');
+            const titleEl = document.getElementById('modal-title');
+            const textEl = document.getElementById('tip-text');
+            const loadingEl = document.getElementById('tip-loading');
+            const sourcesEl = document.getElementById('tip-sources');
+            const sourceListEl = document.getElementById('source-list');
+
+            titleEl.textContent = `${exerciseName} Form Checklist`;
+            textEl.innerHTML = ""; // Use innerHTML for Markdown rendering
+            sourceListEl.innerHTML = "";
+            sourcesEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            modal.classList.remove('hidden');
+
+            // --- UPDATED SYSTEM INSTRUCTION FOR SHORT DO'S AND DON'TS LIST + OPTIONAL NOTE ---
+            const systemInstruction = "You are an expert strength and conditioning coach. The user is a teen athlete with limited equipment. Provide a form guide. The response MUST be formatted as two distinct, VERY CONCISE Markdown bulleted lists under the headings '## DO' and '## DON'T'. Each list must contain 3 to 4 points. The response MAY include a third, optional section titled '## EXTRA NOTE (if necessary)' if there is a critical safety or technique point not covered by the main lists. Otherwise, omit the 'EXTRA NOTE' section entirely. Prioritize extremely short, direct bullet points.";
+            const userQuery = `Provide the proper form Do's and Don'ts for the ${exerciseName} using only a weight bench, barbell, dumbbells, and the leg attachment. Keep the bullet points extremely short.`;
+
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                tools: [{ "google_search": {} }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+            };
+
+            const options = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            };
+
+            try {
+                const response = await exponentialBackoffFetch(`${API_URL}?key=${API_KEY}`, options);
+
+                if (!response.ok) {
+                    let errorMsg = `HTTP error! status: ${response.status}`;
+                    try {
+                        const errorResult = await response.json();
+                        errorMsg = errorResult.error?.message || errorMsg;
+                    } catch (e) {
+                        // Response wasn't JSON
+                    }
+                    throw new Error(`API Error: ${errorMsg}`);
+                }
+
+                const result = await response.json();
+
+                loadingEl.classList.add('hidden');
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    // Use innerHTML to allow Markdown formatting (like lists) to be rendered
+                    textEl.innerHTML = text;
+
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+
+                    if (sources.length > 0) {
+                        sources.slice(0, 3).forEach(source => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<a href="${source.uri}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-500 truncate block">${source.title}</a>`;
+                            sourceListEl.appendChild(li);
+                        });
+                        sourcesEl.classList.remove('hidden');
+                    }
+                } else {
+                    textEl.innerHTML = "Sorry, I couldn't generate a form tip right now. Please check your network connection or try a different exercise.";
+                }
+
+            } catch (error) {
+                loadingEl.classList.add('hidden');
+                console.error("Gemini API Error:", error);
+                textEl.innerHTML = `An error occurred: ${error.message}. Please check your API key and network connection.`;
+            }
+        }
+
+        // On page load, set up the new generator
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // Populate muscle group checkboxes
+            const selectorContainer = document.getElementById('muscle-group-selector');
+            muscleGroups.forEach(group => {
+                const id = group.toLowerCase().replace(' ', '-');
+                selectorContainer.innerHTML += `
+                    <label for="${id}" class="muscle-label cursor-pointer">
+                        <input type="checkbox" id="${id}" value="${group}" class="sr-only">
+                        <div class="text-center p-3 border-2 border-gray-700 bg-gray-700 text-gray-300 rounded-lg font-semibold hover:bg-gray-600">
+                            ${group}
+                        </div>
+                    </label>
+                `;
+            });
+
+            // Attach listener to the main generate button
+            const generateButton = document.getElementById('generate-btn');
+            generateButton.addEventListener('click', generateWorkout);
+        });
+    </script>
 </body>
 </html>
