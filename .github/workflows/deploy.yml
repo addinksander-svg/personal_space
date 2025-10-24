@@ -1,9 +1,9 @@
-name: Deploy GitHub Pages
+﻿name: Deploy GitHub Pages
 
 on:
   push:
     branches:
-      - main # Change to your branch (e.g., master or gh-pages)
+      - main # Your publishing branch
 
 jobs:
   deploy:
@@ -12,29 +12,32 @@ jobs:
       contents: write
       pages: write
       id-token: write
+      
+    # 🌟 YOU MUST ADD THIS SECTION 🌟
+    environment:
+      name: github-pages
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # 1. Inject the API Key into index.html
+      # 1. Inject the API Key from Secret
       - name: Inject API Key from Secret
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           # Use sed to replace the placeholder string with the secret API key value
-          # The | character is used as a delimiter for sed since the API key contains /
+          # Assuming you updated the placeholder to something like %%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%
           sed -i "s|%%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%|${GEMINI_API_KEY}|g" index.html
           
       # 2. Setup Pages
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      # 3. Upload artifact (the file now contains the injected key)
+      # 3. Upload artifact
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Assumes your main index.html is in the root directory
           path: . 
           
       # 4. Deploy to GitHub Pages
