@@ -93,11 +93,51 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+
+        @keyframes gradient-shift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .animate-futuristic-gradient {
+            animation: gradient-shift 15s ease infinite;
+        }
+
+        @keyframes pattern-scroll {
+            to {
+                background-position: 40px 40px;
+            }
+        }
+
+        .animate-pattern-move {
+            animation: pattern-scroll 10s linear infinite;
+        }
+
+        body::-webkit-scrollbar {
+            display: none; 
+        }
+
+        body {
+            -ms-overflow-style: none;
+        }
+
+        html {
+            scrollbar-width: none; 
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-gray-100">
-
-    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+<body class="relative w-full bg-gradient-to-r from-slate-900 via-indigo-900 to-cyan-900 bg-[length:400%_400%] animate-futuristic-gradient text-gray-100">
+    <div class="absolute inset-0 z-0 opacity-20 bg-repeat bg-[size:40px_40px] animate-pattern-move" style="background-image: radial-gradient(circle, #22d3ee 1px, transparent 1px);"></div>
+    <div class="relative z-10 container mx-auto p-4 md:p-8 max-w-4xl">
         <header class="text-center mb-10" id="main-header">
             <!-- Updated Title: Simple and direct -->
             <h1 class="text-3xl md:text-4xl font-extrabold futuristic-title">DYNAMIC WORKOUT PLANNER</h1>
@@ -147,7 +187,7 @@
                 <label for="ppl-include-core" class="flex items-center space-x-2 cursor-pointer text-gray-200 hover:text-cyan-400 transition-colors">
                     <input type="checkbox" id="ppl-include-core" class="form-checkbox h-5 w-5 text-cyan-500 rounded border-slate-700 bg-slate-800 focus:ring-cyan-500 transition duration-150 ease-in-out">
                     <!-- Updated text: Less technical -->
-                    <span class="font-medium">Include Ab & Core Work</span>
+                    <span class="font-medium">Include Core</span>
                 </label>
             </div>
 
@@ -228,7 +268,7 @@
 
     <script>
         // *** IMPORTANT: API Key is set to an empty string ***
-        const API_KEY = "%%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%"
+        const API_KEY = "AIzaSyDunX46S7Y6evdIhkatwD0FsZoEHS_WUqU"
         const MAX_RETRIES = 5;
 
         // Global State for the Active Workout
@@ -286,15 +326,15 @@
             };
 
             return `
-                    <div class="space-y-4">
-                        <!-- Updated Headers: Less technical -->
-                        <h4 class="text-xl font-bold text-emerald-400">Proper Technique (Do)</h4>
-                        ${listToHtml(doListText)}
+                        <div class="space-y-4">
+                            <!-- Updated Headers: Less technical -->
+                            <h4 class="text-xl font-bold text-emerald-400">Proper Technique (Do)</h4>
+                            ${listToHtml(doListText)}
 
-                        <h4 class="text-xl font-bold text-red-400">Common Mistakes (Don't)</h4>
-                        ${listToHtml(dontListText)}
-                    </div>
-                `;
+                            <h4 class="text-xl font-bold text-red-400">Common Mistakes (Don't)</h4>
+                            ${listToHtml(dontListText)}
+                        </div>
+                    `;
         }
 
         // Helper function to generate the YouTube search link HTML
@@ -304,17 +344,17 @@
 
             // Updated text: Less technical, more direct
             return `
-                    <a href="${finalUrl}" target="_blank" class="inline-flex items-center text-sm font-medium
-                        text-cyan-400 hover:text-cyan-300 transition-colors duration-200 border-b border-dashed border-cyan-500/50">
-                        <!-- Generic Video Camera Icon SVG (Lucide-inspired) -->
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-1">
-                            <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5z"/>
-                            <path d="M15 3v4a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V3"/>
-                            <path d="M12 12v4"/>
-                        </svg>
-                        View Form Tutorial
-                    </a>
-                `;
+                        <a href="${finalUrl}" target="_blank" class="inline-flex items-center text-sm font-medium
+                            text-cyan-400 hover:text-cyan-300 transition-colors duration-200 border-b border-dashed border-cyan-500/50">
+                            <!-- Generic Video Camera Icon SVG (Lucide-inspired) -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 mr-1">
+                                <path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8l-5-5z"/>
+                                <path d="M15 3v4a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V3"/>
+                                <path d="M12 12v4"/>
+                            </svg>
+                            View Form Tutorial
+                        </a>
+                    `;
         }
 
         // Helper to parse the focus string (e.g., "Chest (Pecs, Delts)") into structured data
@@ -361,9 +401,9 @@
 
             // 2. Build the main line (Target Area: Label + Main Group)
             let mainTargetLine = `<p class="text-md text-slate-200">
-                                        <span class="font-semibold text-slate-400">Primary Focus:</span>
-                                        ${mainGroup}
-                                      </p>`;
+                                            <span class="font-semibold text-slate-400">Primary Focus:</span>
+                                            ${mainGroup}
+                                          </p>`;
 
             // 3. Build the tags line (Tags below, slightly indented)
             let tagsLine = '';
@@ -377,35 +417,35 @@
 
 
             return `
-                    <div class="bg-slate-900 p-5 rounded-xl shadow-lg border border-slate-800">
-                        <h3 class="text-xl font-bold text-cyan-400 mb-3">${index + 1}. ${exercise.name}</h3>
+                        <div class="bg-slate-900 p-5 rounded-xl shadow-lg border border-slate-800">
+                            <h3 class="text-xl font-bold text-cyan-400 mb-3">${index + 1}. ${exercise.name}</h3>
 
-                        <!-- Structured Metrics Display (Stacked) -->
-                        <div class="space-y-2 mb-4">
+                            <!-- Structured Metrics Display (Stacked) -->
+                            <div class="space-y-2 mb-4">
 
-                            <!-- Target Area Block (Two Lines: Label/Main Group + Tags) -->
-                            <div>
-                                ${mainTargetLine}
-                                ${tagsLine}
+                                <!-- Target Area Block (Two Lines: Label/Main Group + Tags) -->
+                                <div>
+                                    ${mainTargetLine}
+                                    ${tagsLine}
+                                </div>
+
+                                <p class="text-md text-slate-200"><span class="font-semibold text-slate-400">Sets/Reps:</span> ${exercise.setsReps}</p>
+                                <p class="text-md text-slate-200"><span class="font-semibold text-slate-400">Rest Between Sets:</span> ${exercise.restTime}</p>
                             </div>
 
-                            <p class="text-md text-slate-200"><span class="font-semibold text-slate-400">Sets/Reps:</span> ${exercise.setsReps}</p>
-                            <p class="text-md text-slate-200"><span class="font-semibold text-slate-400">Rest Between Sets:</span> ${exercise.restTime}</p>
-                        </div>
+                            <!-- Short Explanation -->
+                            <div class="bg-slate-800 p-3 rounded-lg mb-4 border border-slate-700">
+                                <!-- Updated label: Less technical -->
+                                <p class="text-sm text-slate-400 font-semibold mb-1">Exercise Description:</p>
+                                <p class="text-slate-200">${exercise.description}</p>
+                            </div>
 
-                        <!-- Short Explanation -->
-                        <div class="bg-slate-800 p-3 rounded-lg mb-4 border border-slate-700">
-                            <!-- Updated label: Less technical -->
-                            <p class="text-sm text-slate-400 font-semibold mb-1">Exercise Description:</p>
-                            <p class="text-slate-200">${exercise.description}</p>
+                            <!-- Video Link -->
+                            <div class="flex justify-start mt-3">
+                                ${videoLinkHtml}
+                            </div>
                         </div>
-
-                        <!-- Video Link -->
-                        <div class="flex justify-start mt-3">
-                            ${videoLinkHtml}
-                        </div>
-                    </div>
-                `;
+                    `;
         }
 
         // Renders the large card for the current exercise in the Roadmap View - WITH TIPS
@@ -420,11 +460,11 @@
                 // Show loading spinner
                 // Updated Loading Text
                 tipsContent = `
-                        <div class="flex justify-center items-center text-cyan-400">
-                            <div class="w-6 h-6 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mr-3"></div>
-                            <p>Accessing detailed form focus points...</p>
-                        </div>
-                    `;
+                            <div class="flex justify-center items-center text-cyan-400">
+                                <div class="w-6 h-6 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mr-3"></div>
+                                <p>Accessing detailed form focus points...</p>
+                            </div>
+                        `;
             } else {
                 // Failed or pending fetch
                 tipsContent = `<p class="text-red-400">Form focus points access denied (API error).</p>`;
@@ -434,52 +474,52 @@
             const videoLinkHtml = createVideoLinkHtml(exercise.name);
 
             return `
-                    <div class="text-center">
-                        <!-- Updated Step Counter: Less technical -->
-                        <p class="text-sm font-mono text-cyan-300 uppercase tracking-widest">EXERCISE ${currentExerciseIndex + 1} / ${currentWorkout.length}</p>
+                        <div class="text-center">
+                            <!-- Updated Step Counter: Less technical -->
+                            <p class="text-sm font-mono text-cyan-300 uppercase tracking-widest">EXERCISE ${currentExerciseIndex + 1} / ${currentWorkout.length}</p>
 
-                        <h3 class="text-3xl font-extrabold futuristic-title mt-1 mb-4">${exercise.name}</h3>
+                            <h3 class="text-3xl font-extrabold futuristic-title mt-1 mb-4">${exercise.name}</h3>
 
-                        <!-- Video Link -->
-                        <div class="mb-6 flex justify-center">
-                            ${videoLinkHtml}
-                        </div>
-                    </div>
-
-                    <!-- Structured Display of Metrics -->
-                    <div class="grid grid-cols-3 gap-4 text-center mb-8">
-                        <div class="bg-slate-950 p-3 rounded-lg border-b-4 border-cyan-500 text-center shadow-lg shadow-cyan-500/10">
-                            <p class="text-xs text-slate-400 font-medium">PRIMARY FOCUS</p>
-                            <div class="mt-1">
-                                ${renderTargetAreaTwoLine(exercise.focus)}
+                            <!-- Video Link -->
+                            <div class="mb-6 flex justify-center">
+                                ${videoLinkHtml}
                             </div>
                         </div>
-                        <div class="bg-slate-950 p-3 rounded-lg border-b-4 border-cyan-500 shadow-lg shadow-cyan-500/10">
-                            <p class="text-xs text-slate-400 font-medium">VOLUME / INTENSITY</p>
-                            <p class="text-lg font-bold text-gray-100">${exercise.setsReps}</p>
-                        </div>
-                        <div class="bg-slate-950 p-3 rounded-lg border-b-4 border-cyan-500 shadow-lg shadow-cyan-500/10">
-                            <p class="text-xs text-slate-400 font-medium">RECOVERY TIME</p>
-                            <p class="text-lg font-bold text-gray-100">${exercise.restTime}</p>
-                        </div>
-                    </div>
 
-                    <!-- Short Explanation -->
-                    <div class="bg-slate-800 p-5 rounded-xl shadow-inner mt-4 mb-4 border border-slate-700">
-                        <!-- Updated Header: Less technical -->
-                        <h4 class="text-xl font-semibold mb-2 text-cyan-400 border-b border-slate-700 pb-1">Exercise Goal</h4>
-                        <p class="text-slate-200">${exercise.description}</p>
-                    </div>
-
-                    <!-- Detailed Form Checklist Section (Tips Content) -->
-                    <div id="form-checklist" class="bg-slate-800 p-5 rounded-xl shadow-inner mt-4 border border-slate-700">
-                        <!-- Updated Heading: Less technical -->
-                        <h4 class="text-xl font-semibold mb-3 text-cyan-400 border-b border-slate-700 pb-2">Form Focus Points</h4>
-                        <div class="text-slate-200 space-y-3">
-                            ${tipsContent}
+                        <!-- Structured Display of Metrics -->
+                        <div class="grid grid-cols-3 gap-4 text-center mb-8">
+                            <div class="bg-slate-950 p-3 rounded-lg border-b-4 border-cyan-500 text-center shadow-lg shadow-cyan-500/10">
+                                <p class="text-xs text-slate-400 font-medium">PRIMARY FOCUS</p>
+                                <div class="mt-1">
+                                    ${renderTargetAreaTwoLine(exercise.focus)}
+                                </div>
+                            </div>
+                            <div class="bg-slate-950 p-3 rounded-lg border-b-4 border-cyan-500 shadow-lg shadow-cyan-500/10">
+                                <p class="text-xs text-slate-400 font-medium">VOLUME / INTENSITY</p>
+                                <p class="text-lg font-bold text-gray-100">${exercise.setsReps}</p>
+                            </div>
+                            <div class="bg-slate-950 p-3 rounded-lg border-b-4 border-cyan-500 shadow-lg shadow-cyan-500/10">
+                                <p class="text-xs text-slate-400 font-medium">RECOVERY TIME</p>
+                                <p class="text-lg font-bold text-gray-100">${exercise.restTime}</p>
+                            </div>
                         </div>
-                    </div>
-                `;
+
+                        <!-- Short Explanation -->
+                        <div class="bg-slate-800 p-5 rounded-xl shadow-inner mt-4 mb-4 border border-slate-700">
+                            <!-- Updated Header: Less technical -->
+                            <h4 class="text-xl font-semibold mb-2 text-cyan-400 border-b border-slate-700 pb-1">Exercise Goal</h4>
+                            <p class="text-slate-200">${exercise.description}</p>
+                        </div>
+
+                        <!-- Detailed Form Checklist Section (Tips Content) -->
+                        <div id="form-checklist" class="bg-slate-800 p-5 rounded-xl shadow-inner mt-4 border border-slate-700">
+                            <!-- Updated Heading: Less technical -->
+                            <h4 class="text-xl font-semibold mb-3 text-cyan-400 border-b border-slate-700 pb-2">Form Focus Points</h4>
+                            <div class="text-slate-200 space-y-3">
+                                ${tipsContent}
+                            </div>
+                        </div>
+                    `;
         }
 
         // Helper function to generate the HTML for a single roadmap item
@@ -488,17 +528,17 @@
             const { mainGroup } = parseFocusDisplay(exercise.focus);
 
             return `
-                    <div class="${bgColor} p-4 rounded-lg shadow-md border-l-4 ${borderColor} flex justify-between items-center ${opacity}">
-                        <div>
-                            <p class="text-md font-semibold text-gray-100">${index + 1}. ${exercise.name}</p>
-                            <p class="text-sm text-slate-400">Sets/Reps: ${exercise.setsReps}</p>
+                        <div class="${bgColor} p-4 rounded-lg shadow-md border-l-4 ${borderColor} flex justify-between items-center ${opacity}">
+                            <div>
+                                <p class="text-md font-semibold text-gray-100">${index + 1}. ${exercise.name}</p>
+                                <p class="text-sm text-slate-400">Sets/Reps: ${exercise.setsReps}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs font-bold text-cyan-400 block">${mainGroup}</span>
+                                <span class="text-xs font-medium ${statusClass} block">${statusText}</span>
+                            </div>
                         </div>
-                        <div class="text-right">
-                            <span class="text-xs font-bold text-cyan-400 block">${mainGroup}</span>
-                            <span class="text-xs font-medium ${statusClass} block">${statusText}</span>
-                        </div>
-                    </div>
-                `;
+                    `;
         }
 
         // Controls moving through the workout and marking status
@@ -517,14 +557,14 @@
                 const roadmap = document.getElementById('workout-roadmap');
                 // --- START: UPDATED COMPLETION MESSAGE ---
                 roadmap.innerHTML = `
-                        <div class="text-center bg-slate-900 p-10 rounded-xl shadow-2xl border border-slate-800">
-                            <h2 class="text-3xl font-bold text-emerald-400 mb-4">SESSION COMPLETE!</h2>
-                            <p class="text-lg text-slate-200">Great work, you crushed that session!</p>
-                            <button onclick="window.location.reload()" class="mt-6 bg-cyan-600 text-slate-950 font-bold py-3 px-5 rounded-lg hover:bg-cyan-500 transition-colors duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 shadow-lg shadow-cyan-500/30">
-                                START NEW WORKOUT
-                            </button>
-                        </div>
-                    `;
+                            <div class="text-center bg-slate-900 p-10 rounded-xl shadow-2xl border border-slate-800">
+                                <h2 class="text-3xl font-bold text-emerald-400 mb-4">SESSION COMPLETE!</h2>
+                                <p class="text-lg text-slate-200">Great work, you crushed that session!</p>
+                                <button onclick="window.location.reload()" class="mt-6 bg-cyan-600 text-slate-950 font-bold py-3 px-5 rounded-lg hover:bg-cyan-500 transition-colors duration-300 focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 focus:ring-offset-slate-900 shadow-lg shadow-cyan-500/30">
+                                    START NEW WORKOUT
+                                </button>
+                            </div>
+                        `;
                 // --- END: UPDATED COMPLETION MESSAGE ---
             }
         }
@@ -825,13 +865,13 @@
             // --- SYSTEM INSTRUCTION (Uses less technical language) ---
             const systemInstruction = `You are an expert fitness coach. The user is a teen athlete and only has access to a weight bench, a long barbell, an EZ curl bar, adjustable dumbbells/plates, and a LEG EXTENSION/CURL ATTACHMENT. Generate a **${selectedGoal}** workout plan with ${numExercises} exercises *only* using this equipment, based on the user's selected muscle groups. The workout must be designed to fit a total duration of ${selectedDuration} minutes.
 
-                For the JSON response:
-                1. The 'setsReps' field MUST be formatted exactly as 'X sets of Y reps' (e.g., '3 sets of 8-12 reps').
-                2. The 'restTime' field MUST be formatted exactly as 'X seconds' (e.g., '90 seconds'). Base the value on a typical rest time for a ${selectedGoal} workout (e.g., use '${preset.restTarget}').
-                3. The 'focus' field MUST be formatted as 'Main Muscle Group (Specific Muscles Hit)' (e.g., 'Back (Lats, Rhomboids, Biceps)').
-                4. The 'description' must be a concise (1-2 sentence) explanation of the exercise.
+                    For the JSON response:
+                    1. The 'setsReps' field MUST be formatted exactly as 'X sets of Y reps' (e.g., '3 sets of 8-12 reps').
+                    2. The 'restTime' field MUST be formatted exactly as 'X seconds' (e.g., '90 seconds'). Base the value on a typical rest time for a ${selectedGoal} workout (e.g., use '${preset.restTarget}').
+                    3. The 'focus' field MUST be formatted as 'Main Muscle Group (Specific Muscles Hit)' (e.g., 'Back (Lats, Rhomboids, Biceps)').
+                    4. The 'description' must be a concise (1-2 sentence) explanation of the exercise.
 
-                All advice must be safe and age-appropriate.`;
+                    All advice must be safe and age-appropriate.`;
 
             const userQuery = `Generate a workout for the following muscle groups: ${selectedGroups.join(', ')}.`;
 
@@ -913,10 +953,10 @@
                     // Add the START button
                     // Updated Button Text
                     list.innerHTML += `
-                            <button id="start-workout-btn" class="w-full mt-6 bg-indigo-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-900 shadow-lg shadow-indigo-500/30">
-                                START WORKOUT
-                            </button>
-                        `;
+                                <button id="start-workout-btn" class="w-full mt-6 bg-indigo-600 text-white font-bold py-3 px-5 rounded-lg hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-900 shadow-lg shadow-indigo-500/30">
+                                    START WORKOUT
+                                </button>
+                            `;
                     document.getElementById('start-workout-btn').addEventListener('click', startWorkout);
 
                     document.getElementById('workout-list').classList.remove('hidden');
@@ -943,13 +983,13 @@
             muscleGroups.forEach(group => {
                 const id = group.toLowerCase().replace(' ', '-');
                 selectorContainer.innerHTML += `
-                        <label for="${id}" class="muscle-label cursor-pointer">
-                            <input type="checkbox" id="${id}" value="${group}" class="sr-only">
-                            <div class="text-center p-3 border-2 border-slate-700 bg-slate-800 text-slate-300 rounded-lg font-semibold hover:bg-slate-700">
-                                ${group}
-                            </div>
-                        </label>
-                    `;
+                            <label for="${id}" class="muscle-label cursor-pointer">
+                                <input type="checkbox" id="${id}" value="${group}" class="sr-only">
+                                <div class="text-center p-3 border-2 border-slate-700 bg-slate-800 text-slate-300 rounded-lg font-semibold hover:bg-slate-700">
+                                    ${group}
+                                </div>
+                            </label>
+                        `;
             });
 
             // Set up PPL listeners
