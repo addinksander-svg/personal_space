@@ -144,7 +144,7 @@
     </div>
 
     <script>
-        /// The API key will be injected here during the GitHub Actions deployment.
+        // *** IMPORTANT: PASTE YOUR API KEY HERE ***
         const API_KEY = "%%%GEMINI_KEY_INJECTION_PLACEHOLDER%%%";
         const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
         const MAX_RETRIES = 5;
@@ -164,24 +164,24 @@
             }
 
             return `
-                <div class="bg-gray-800 p-5 rounded-xl shadow-md border border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex-grow">
-                        <h3 class="text-lg font-bold text-blue-400">${exercise.name}</h3>
-                        <div class="flex flex-wrap items-center text-sm text-gray-300 mt-2 gap-2">
-                            <span class="bg-gray-700 px-2 py-1 rounded-full">🎯 ${exercise.focus}</span>
-                            <span class="bg-gray-700 px-2 py-1 rounded-full">🏋️ ${exercise.setsReps}</span>
+                    <div class="bg-gray-800 p-5 rounded-xl shadow-md border border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div class="flex-grow">
+                            <h3 class="text-lg font-bold text-blue-400">${exercise.name}</h3>
+                            <div class="flex flex-wrap items-center text-sm text-gray-300 mt-2 gap-2">
+                                <span class="bg-gray-700 px-2 py-1 rounded-full">🎯 ${exercise.focus}</span>
+                                <span class="bg-gray-700 px-2 py-1 rounded-full">🏋️ ${exercise.setsReps}</span>
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 mt-4 md:mt-0 flex flex-col space-y-2">
+                            <button data-exercise-name="${exercise.name}" class="ai-form-btn inline-block bg-green-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-300">
+                                ✨ Get Form Tip
+                            </button>
+                            <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 text-white font-semibold py-2 px-5 text-center rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
+                                Watch Video
+                            </a>
                         </div>
                     </div>
-                    <div class="flex-shrink-0 mt-4 md:mt-0 flex flex-col space-y-2">
-                        <button data-exercise-name="${exercise.name}" class="ai-form-btn inline-block bg-green-500 text-white font-semibold py-2 px-5 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-300">
-                            ✨ Get Form Tip
-                        </button>
-                        <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" class="inline-block bg-blue-600 text-white font-semibold py-2 px-5 text-center rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-300">
-                            Watch Video
-                        </a>
-                    </div>
-                </div>
-            `;
+                `;
         }
 
         // This function attaches click listeners to the "Get Form Tip" buttons
@@ -316,9 +316,9 @@
                     const exercises = JSON.parse(jsonText);
 
                     if (exercises.length === 0) {
-                         placeholder.innerHTML = `<p class="text-lg text-gray-400">No exercises found for this combination. Try selecting different muscle groups or generating again.</p>`;
-                         placeholder.classList.remove('hidden');
-                         return;
+                        placeholder.innerHTML = `<p class="text-lg text-gray-400">No exercises found for this combination. Try selecting different muscle groups or generating again.</p>`;
+                        placeholder.classList.remove('hidden');
+                        return;
                     }
 
                     // Populate the list
@@ -436,13 +436,13 @@
             muscleGroups.forEach(group => {
                 const id = group.toLowerCase().replace(' ', '-');
                 selectorContainer.innerHTML += `
-                    <label for="${id}" class="muscle-label cursor-pointer">
-                        <input type="checkbox" id="${id}" value="${group}" class="sr-only">
-                        <div class="text-center p-3 border-2 border-gray-700 bg-gray-700 text-gray-300 rounded-lg font-semibold hover:bg-gray-600">
-                            ${group}
-                        </div>
-                    </label>
-                `;
+                        <label for="${id}" class="muscle-label cursor-pointer">
+                            <input type="checkbox" id="${id}" value="${group}" class="sr-only">
+                            <div class="text-center p-3 border-2 border-gray-700 bg-gray-700 text-gray-300 rounded-lg font-semibold hover:bg-gray-600">
+                                ${group}
+                            </div>
+                        </label>
+                    `;
             });
 
             // Attach listener to the main generate button
@@ -452,3 +452,4 @@
     </script>
 </body>
 </html>
+
